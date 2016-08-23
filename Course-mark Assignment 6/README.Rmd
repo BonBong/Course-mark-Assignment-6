@@ -1,0 +1,252 @@
+---
+title: "Assignment 5"
+author: "Bongani Mveng"
+date: "11 August 2016"
+output: github_document
+---
+
+##Hello Octocat
+
+I love Octocat. She's the coolest cat in town. 
+
+![Octocat](https://dl.dropboxusercontent.com/u/11805474/painblogr/biostats/images/octocat.png)
+
+```{r quick_look, echo = TRUE}
+data(anscombe)
+dim(anscombe)
+colnames(anscombe)
+head(anscombe)
+tail(anscombe)
+summary(anscombe)
+```
+
+```{r xy_plot, echo = FALSE, fig.width = 8, fig.height = 8, fig.align = "center", fig.path = "./figures.", dev = "svg"}
+
+data("anscombe")
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+anscombe.nu <- select(anscombe, x1, y1)
+anscombe.nu
+plot(anscombe.nu$y1~anscombe.nu$x1,
+     main = "Anscombe Scatterplot",
+     xlab = "x1",
+     ylab = "y1",
+     ylim = c(3,12),
+     xlim = c(3, 15),
+     pch = 24)
+abline(lm(y1~x1, data = anscombe), col = "green")
+```
+
+```{r data_import, echo = TRUE}
+library(readr)
+df <- read.csv("analgesic.csv")
+```
+
+```{r data_summary, echo = TRUE}
+dim(df)
+colnames(df)
+head(df)
+tail(df)
+summary(df)
+```
+
+```{r data_tidy, echo = TRUE}
+library(tidyr)
+library(dplyr)
+# Tidy the data from a wide to long format 
+df.new <- gather(df, Replicate_reading, Measurement, Measurement_1:Measurement_3) 
+
+# Group by the 'Group' column ("Analgesic", "Placebo")
+grouped <- group_by(df.new, Group) 
+grouped
+
+# Group by the 'ID' column
+grouped.2 <- group_by(grouped, ID)  
+grouped.2
+
+# Get the mean for every individual's ("ID") measurements
+sum <- summarize(grouped.2, mean(Measurement)) 
+
+# Print the final dataframe
+sum
+```
+
+
+
+
+#CHICKEN WEIGHTS
+
+##Null Hypothesis
+* No relationship exists between type of feed supplement and chick weight.
+
+##Alternative Hypothesis
+* The feed supplement most resemblant of the wild type nutrient will promote the highest weight gain in the chicks.
+```{r chicken_weights, echo = TRUE}
+
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+
+# import dataset
+chkwt <- read.csv("chkwts.csv")
+chkwts <- tbl_df(chkwt)
+chkwts
+
+# Explore data with plots
+qplot(x = feed,
+      y = weight,
+      data = chkwts,
+      geom = "boxplot",
+      xlab = "Feed",
+      ylab = "Weight (g)",
+      main = "Neonate chicks' weight per feed supplement type")
+
+# Statistical Test (ANOVA)
+ANO.VA <- aov(weight~feed, data = chkwts)
+summary(ANO.VA)
+
+# Correct for multiple comparisons using Bonferroni post hoc test
+pairwise.t.test(chkwts$weight, chkwts$feed,
+                p.adjust.method = 'bonferroni',
+                paired = FALSE)
+```
+
+##Test Assumptions
+* Gaussian distribution
+* Equal variance amongst groups
+* Independent errors
+* Data are unmatched
+
+##Outcome Analysis
+* Casein promotes the most growth out of all the feed supplements, while horsebean promotes the least. There is no statistical difference between the  casein, meat meal, and sunflower supplements, suggesting that the latter two are as statistically efficient in promoting growth. However, this does not signify biological efficiency. 
+* Therefore, we reject the null hypothesis
+
+#THE HOT ZONE
+
+##Null Hypothesis 
+* There is no relationship beween consumption of contaminated water and presentation with gastroenteritis. 
+
+##Alternative Hypothesis 
+* Consumption of contaminated water causes gastroenteritis. 
+
+```{r the_hot_zone, echo = TRUE}
+
+
+# import dataset
+gastroe <- read.csv("hotzone.csv")
+gastro <- tbl_df(gastroe)
+head(gastro)
+tail(gastro)
+
+
+# Cross tabulate with xtabs
+gastroX <- xtabs(~Consumption + Outcome,
+      data = gastro)
+gastroX
+
+
+
+# plot gastroX
+barplot(gastroX, beside = TRUE,
+        main = "Relationship between gastroenteritis presentation and the amount of consumed contaminated water by people in a small town",
+        xlab = "Presentation",
+        ylab = "Number of People",
+        col = c("black", "red", "grey"))
+
+par(xpd = TRUE)
+legend("topright", c("< 1 glass/day", "< 4 glasses/day", "> 4 glasses/day"), bty = "n", fill = c("black", "red", "grey"))
+
+# Statistics (Pearson's Chi-squared Test)
+ ChiSq <- chisq.test(gastroX, correct = FALSE)
+ ChiSq
+```
+##Statistical Test
+* Pearson's Chi-square test
+* X-squared = 74.925, degrees of freedom = 2, p value < 2.2e-16
+
+### Test Assumptions:
+* random sampling
+* independent observations
+* large sample size
+* discrete probability in observed frequencies within the table can be estimated by the continuous X^2^ distribution
+
+##Outcome Analysis
+* The p value indicates a significant relationship between the amount of contaminated water consumed and whether or not a given individual presented with gastroenteritis. Namely, the amount of contaminated water consumed was directly proportional to gastroenteritis incidences.
+* Therefore, reject the null hypothesis.
+
+
+#NAUSEA
+
+##Null Hypothesis
+* Administration of 5HT3 receptor antagonist does not ameliorate nausea intensity. 
+
+##Alternative Hypothesis
+* Administration of 5HT3 receptor antagonist decreases nausea intensity. 
+```{r Nausea, echo = TRUE}
+# import data set
+nnausea <- read.csv("nausea.csv")
+nausea <- tbl_df(nnausea)
+nausea
+
+# Assuming that that the '40' in the dataset is an error (given that it exceeds the pain scale), I've changed it to '4'.
+
+nausea[8,3] = 4
+nausea
+
+# plot dataset
+plot(nausea$Nausea_before~nausea$Patient,
+     col = "red",
+     type = "o",
+     ylim = c(0,6),
+     ylab = "Nausea Rating",
+     xlab = "Patient",
+     main = "Nausea intensity ratings before and after administration of a 5HT# receptor antagonist")
+lines(nausea$Nausea_after~nausea$Patient)
+points(nausea$Nausea_after~nausea$Patient)
+legend(4,6, c("Nausea before", "Nausea after"), fill = c("red", "black"))
+
+# Statistical test (Wilcoxin Signed-rank test)
+wilcox.test(nausea$Nausea_before, nausea$Nausea_after, paired = TRUE)
+```
+
+## Statistical Test
+* Wilcoxin signed-rank test
+
+###Test Assumptions:
+* central limit theorem applies  
+* independent errors
+* effective data matching 
+
+##Outcome Analysis
+* Ratings of nausea intensity significantly decreased following adminisatration of the 5HT3 receptor antagonist. Therefore, reject the null hypothesis.
+
+#HOUSE PRICES
+
+##Null Hypothesis 
+* No relationship exists between the interest rate and the price of housing.
+
+##Alternative Hypothesis
+* An inversely proportional relationship exists between the interest rate and the price of housing.
+
+```{r house_prices, echo = TRUE}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+
+# view the dataset
+house_price <- read.csv("hspri.csv")
+hspri <- tbl_df(house_price)
+hspri
+
+# explore dataset with plots
+with(hspri, plot(x = interest_rate,
+                 y = median_house_price_USD,
+     main = "Relationship between interest rates and median house prices in the U.S.A",
+     xlab = "Interest Rate (%)",
+     ylab = "Median House Prices ($)"))
+```
+##Statitstical Test
+###Test Assumptions:
+##Outcome Analysis
