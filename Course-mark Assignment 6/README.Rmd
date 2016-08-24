@@ -1,5 +1,5 @@
 ---
-title: "Assignment 5"
+title: "Assignment 6"
 author: "Bongani Mveng"
 date: "11 August 2016"
 output: github_document
@@ -234,6 +234,7 @@ wilcox.test(nausea$Nausea_before, nausea$Nausea_after, paired = TRUE)
 library(tidyr)
 library(dplyr)
 library(ggplot2)
+library(knitr)
 
 # view the dataset
 house_price <- read.csv("hspri.csv")
@@ -241,12 +242,26 @@ hspri <- tbl_df(house_price)
 hspri
 
 # explore dataset with plots
-with(hspri, plot(x = interest_rate,
-                 y = median_house_price_USD,
-     main = "Relationship between interest rates and median house prices in the U.S.A",
-     xlab = "Interest Rate (%)",
-     ylab = "Median House Prices ($)"))
+
+
+qplot(x = interest_rate,
+      y = median_house_price_USD,
+      data = hspri,
+      main = "Relationship between interest rates and median house prices in the U.S.A",
+      xlab = "Interest Rate (%)",
+      ylab = "Median House Prices ($)")
+
+# perform Spearman Correlation
+hspri.cor <- with(hspri, cor.test(x = interest_rate, y = median_house_price_USD, method = 'spearman'))
+
+# print summary of the correlation
+hspri.cor
 ```
 ##Statitstical Test
+* Spearman Correlation
 ###Test Assumptions:
+* variables are measured on using ordinal, ratio, or interval scales
+* a monotonic relationship exists between the variables (i.e the variables are proportional to one another, but not at the same rate)
+
 ##Outcome Analysis
+* The plot and statistical test shows that no relationship/corrlation exists between the measured variables. Therefore accept the null hypothesis.  
