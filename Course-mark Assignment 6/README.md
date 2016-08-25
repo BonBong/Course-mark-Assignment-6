@@ -545,11 +545,31 @@ Alternative Hypothesis
 
 -   An inversely proportional relationship exists between the interest rate and the price of housing.
 
+Statitstical Test 1 (Spearman Correlation)
+------------------------------------------
+
+### Test Assumptions:
+
+-   variables are measured on using ordinal, ratio, or interval scales
+-   a monotonic relationship exists between the variables (i.e the variables are proportional to one another, but not at the same rate).
+
+Statistical Test 2 (Linear Regression)
+--------------------------------------
+
+### Test Assumptions:
+
+-   linear relationship between the variables
+-   independent observations
+-   *x* variable measured without error
+-   normally distributed residuals
+-   homoskedastic residuals
+
 ``` r
 library(tidyr)
 library(dplyr)
 library(ggplot2)
 library(knitr)
+
 
 # view the dataset
 house_price <- read.csv("hspri.csv")
@@ -590,7 +610,7 @@ p <- qplot(x = interest_rate,
       xlab = "Interest Rate (%)",
       ylab = "Median House Prices ($)")
 # annotate the plot with r coefficient and p-value 
-p + annotate("text", x = 9, y = 300000, label = "r = -0.04") + annotate("text", x = 9, y = 290000, label = "p = 0.08")
+p + annotate("text", x = 9, y = 300000, label = "r = -0.4") + annotate("text", x = 9, y = 290000, label = "p = 0.08") + theme(plot.title =element_text(size = 12, face = 'bold'))
 ```
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
@@ -620,16 +640,52 @@ hspri.cor
     ##        rho 
     ## -0.4458286
 
-Statitstical Test
------------------
+``` r
+# perform and print  summary of linear regression
+hspri.reg <- lm(median_house_price_USD~interest_rate, data = hspri)
+summary(hspri.reg)
+```
 
--   Spearman Correlation \#\#\# Test Assumptions:
--   variables are measured on using ordinal, ratio, or interval scales
--   a monotonic relationship exists between the variables (i.e the variables are proportional to one another, but not at the same rate)
+    ## 
+    ## Call:
+    ## lm(formula = median_house_price_USD ~ interest_rate, data = hspri)
+    ## 
+    ## Residuals:
+    ##    Min     1Q Median     3Q    Max 
+    ## -55865 -31631 -16406  27212  80735 
+    ## 
+    ## Coefficients:
+    ##               Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)     399229      74427   5.364 9.99e-05 ***
+    ## interest_rate   -24309       9205  -2.641   0.0194 *  
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 43180 on 14 degrees of freedom
+    ##   (1 observation deleted due to missingness)
+    ## Multiple R-squared:  0.3325, Adjusted R-squared:  0.2848 
+    ## F-statistic: 6.974 on 1 and 14 DF,  p-value: 0.01937
+
+``` r
+# to view subsequent dregression diagnostic graphs witin a single plot
+par(mfrow = c(1,2))
+
+# perform diagnostic plot to check for homoskedasticity of residuals
+plot(x = hspri.reg$fitted.values,
+     y = hspri.reg$residuals,
+     xlab = "Fitted Values",
+     ylab = "Residuals",
+     main = "Heteroskedasticity of residuals")
+abline(h = 0)
+# perform diagnostic plot to check for normality of residuals
+qqnorm(hspri.reg$residuals, main = "Skewed residual distribution")
+qqline(hspri.reg$residuals)
+```
+
+![](README_files/figure-markdown_github/house_prices-2.png)
 
 Outcome Analysis
 ----------------
 
--   The plot and statistical test shows that no relationship/correlation exists between the measured variables. Therefore accept the null hypothesis.
--   It is because of this lack in correlation that a linear regression was not performed (unless there is a correlation, linear regression in meaningless).
--   That there is no linear trend between the measured variables is evidenced by the p value of 0.08 (significance is taken at p&lt;0.05).
+-   The plot and Spearman Correlation test shows that a weak negative inverse correlation (*r* = -0.4) exists between the measured variales.. A *p* value of 0.08 inidicates that the chances of obtaining the observed *r* value (assuming *H=0* is true) are significantly high.
+-   There is no linear relationship between the variables, as the diagnostic tests show no homoskedasticity or Gaussian distribution of the residuals. Both these parameters are required assumptions for a linear regression. in addition to theses, a linear trend is not apparent from the plot.
