@@ -240,6 +240,18 @@ Alternative Hypothesis
 
 -   The feed supplement most resemblant of the wild type nutrient will promote the highest weight gain in the chicks.
 
+Statistical Test
+----------------
+
+-   ANOVA
+
+### Test Assumptions
+
+-   Gaussian distribution
+-   Equal variance amongst groups
+-   Independent errors
+-   Data are unmatched
+
 ``` r
 library(tidyr)
 library(dplyr)
@@ -314,14 +326,6 @@ pairwise.t.test(chkwts$weight, chkwts$feed,
     ## 
     ## P value adjustment method: bonferroni
 
-Test Assumptions
-----------------
-
--   Gaussian distribution
--   Equal variance amongst groups
--   Independent errors
--   Data are unmatched
-
 Outcome Analysis
 ----------------
 
@@ -340,6 +344,19 @@ Alternative Hypothesis
 ----------------------
 
 -   Consumption of contaminated water causes gastroenteritis.
+
+Statistical Test
+----------------
+
+-   Pearson's Chi-square test
+-   X-squared = 74.925, degrees of freedom = 2, p value &lt; 2.2e-16
+
+### Test Assumptions:
+
+-   random sampling
+-   independent observations
+-   large sample size
+-   discrete probability in observed frequencies within the table can be estimated by the continuous X<sup>2</sup> distribution
 
 ``` r
 # import dataset
@@ -413,19 +430,6 @@ legend("topright", c("< 1 glass/day", "< 4 glasses/day", "> 4 glasses/day"), bty
     ## data:  gastroX
     ## X-squared = 74.925, df = 2, p-value < 2.2e-16
 
-Statistical Test
-----------------
-
--   Pearson's Chi-square test
--   X-squared = 74.925, degrees of freedom = 2, p value &lt; 2.2e-16
-
-### Test Assumptions:
-
--   random sampling
--   independent observations
--   large sample size
--   discrete probability in observed frequencies within the table can be estimated by the continuous X<sup>2</sup> distribution
-
 Outcome Analysis
 ----------------
 
@@ -444,6 +448,17 @@ Alternative Hypothesis
 ----------------------
 
 -   Administration of 5HT3 receptor antagonist decreases nausea intensity.
+
+Statistical Test
+----------------
+
+-   Wilcoxin signed-rank test
+
+### Test Assumptions:
+
+-   central limit theorem applies
+-   independent errors
+-   effective data matching
 
 ``` r
 # import data set
@@ -516,17 +531,6 @@ wilcox.test(nausea$Nausea_before, nausea$Nausea_after, paired = TRUE)
     ## V = 34, p-value = 0.02897
     ## alternative hypothesis: true location shift is not equal to 0
 
-Statistical Test
-----------------
-
--   Wilcoxin signed-rank test
-
-### Test Assumptions:
-
--   central limit theorem applies
--   independent errors
--   effective data matching
-
 Outcome Analysis
 ----------------
 
@@ -545,8 +549,8 @@ Alternative Hypothesis
 
 -   An inversely proportional relationship exists between the interest rate and the price of housing.
 
-Statitstical Test 1 (Spearman Correlation)
-------------------------------------------
+Statistical Test 1 (Spearman Correlation)
+-----------------------------------------
 
 ### Test Assumptions:
 
@@ -601,23 +605,13 @@ hspri
 
 ``` r
 # explore dataset with plots
-
-
 p <- qplot(x = interest_rate,
       y = median_house_price_USD,
       data = hspri,
       main = "Relationship between interest rates and median house prices in the U.S.A",
       xlab = "Interest Rate (%)",
       ylab = "Median House Prices ($)")
-# annotate the plot with r coefficient and p-value 
-p + annotate("text", x = 9, y = 300000, label = "r = -0.4") + annotate("text", x = 9, y = 290000, label = "p = 0.08") + theme(plot.title =element_text(size = 12, face = 'bold'))
-```
 
-    ## Warning: Removed 1 rows containing missing values (geom_point).
-
-![](README_files/figure-markdown_github/house_prices-1.png)
-
-``` r
 # perform Spearman Correlation
 hspri.cor <- with(hspri, cor.test(x = interest_rate, y = median_house_price_USD, method = 'spearman'))
 ```
@@ -639,6 +633,15 @@ hspri.cor
     ## sample estimates:
     ##        rho 
     ## -0.4458286
+
+``` r
+# annotate the plot with r coefficient and p-value 
+p + annotate("text", x = 9, y = 300000, label = "r = -0.4") + annotate("text", x = 9, y = 290000, label = "p = 0.08") + theme(plot.title =element_text(size = 12, face = 'bold'))
+```
+
+    ## Warning: Removed 1 rows containing missing values (geom_point).
+
+![](README_files/figure-markdown_github/house_prices-1.png)
 
 ``` r
 # perform and print  summary of linear regression
@@ -667,8 +670,10 @@ summary(hspri.reg)
     ## F-statistic: 6.974 on 1 and 14 DF,  p-value: 0.01937
 
 ``` r
-# to view subsequent dregression diagnostic graphs witin a single plot
-par(mfrow = c(1,2))
+# to view the subsequent linear regression diagnostic graphs witin a single plot
+par(mfrow = c(1,2),
+    mar = c(4, 4, 2, 1),
+    oma = c(0, 0, 1, 0)) 
 
 # perform diagnostic plot to check for homoskedasticity of residuals
 plot(x = hspri.reg$fitted.values,
@@ -677,9 +682,13 @@ plot(x = hspri.reg$fitted.values,
      ylab = "Residuals",
      main = "Heteroskedasticity of residuals")
 abline(h = 0)
+
 # perform diagnostic plot to check for normality of residuals
 qqnorm(hspri.reg$residuals, main = "Skewed residual distribution")
 qqline(hspri.reg$residuals)
+
+# give an overall title
+mtext("Diagnostic plots for linear regression analysis", outer = TRUE)
 ```
 
 ![](README_files/figure-markdown_github/house_prices-2.png)
@@ -687,5 +696,6 @@ qqline(hspri.reg$residuals)
 Outcome Analysis
 ----------------
 
--   The plot and Spearman Correlation test shows that a weak negative inverse correlation (*r* = -0.4) exists between the measured variales.. A *p* value of 0.08 inidicates that the chances of obtaining the observed *r* value (assuming *H=0* is true) are significantly high.
--   There is no linear relationship between the variables, as the diagnostic tests show no homoskedasticity or Gaussian distribution of the residuals. Both these parameters are required assumptions for a linear regression. in addition to theses, a linear trend is not apparent from the plot.
+-   The plot and Spearman Correlation test shows that a weak negative inverse correlation (*r* = -0.4) exists between the measured variales. A *p* value of 0.08 (which is quite high) inidicates that the null hypothesis may be accepted in this case.
+-   There is no linear relationship between the variables, as the diagnostic tests show no homoskedasticity or Gaussian distribution of the residuals. Both these parameters are required assumptions for a linear regression. In addition to theses, a linear trend is not apparent from the plot.
+-   Test statistic (F) = 6.97, degree of freedom =14
