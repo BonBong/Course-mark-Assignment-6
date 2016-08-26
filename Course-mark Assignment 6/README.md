@@ -549,20 +549,22 @@ Alternative Hypothesis
 
 -   An inversely proportional relationship exists between the interest rate and the price of housing.
 
-Statistical Test 1 (Spearman Correlation)
------------------------------------------
+Statistical Test 1 (Pearson Correlation)
+----------------------------------------
 
 ### Test Assumptions:
 
--   variables are measured on using ordinal, ratio, or interval scales
--   a monotonic relationship exists between the variables (i.e the variables are proportional to one another, but not at the same rate).
+-   variables are measured on either an interval or ratio scale
+-   variables must be linearly related
+-   no outliers present
+-   normally distributed variables
 
 Statistical Test 2 (Linear Regression)
 --------------------------------------
 
 ### Test Assumptions:
 
--   linear relationship between the variables
+-   linear relationship exists between the variables
 -   independent observations
 -   *x* variable measured without error
 -   normally distributed residuals
@@ -612,31 +614,28 @@ p <- qplot(x = interest_rate,
       xlab = "Interest Rate (%)",
       ylab = "Median House Prices ($)")
 
-# perform Spearman Correlation
-hspri.cor <- with(hspri, cor.test(x = interest_rate, y = median_house_price_USD, method = 'spearman'))
-```
+# perform Pearson Correlation
+hspri.cor <- with(hspri, cor.test(x = interest_rate, y = median_house_price_USD, method = 'pearson'))
 
-    ## Warning in cor.test.default(x = interest_rate, y =
-    ## median_house_price_USD, : Cannot compute exact p-value with ties
-
-``` r
 # print summary of the correlation
 hspri.cor
 ```
 
     ## 
-    ##  Spearman's rank correlation rho
+    ##  Pearson's product-moment correlation
     ## 
     ## data:  interest_rate and median_house_price_USD
-    ## S = 983.16, p-value = 0.08349
-    ## alternative hypothesis: true rho is not equal to 0
+    ## t = -2.6409, df = 14, p-value = 0.01937
+    ## alternative hypothesis: true correlation is not equal to 0
+    ## 95 percent confidence interval:
+    ##  -0.8339619 -0.1133269
     ## sample estimates:
-    ##        rho 
-    ## -0.4458286
+    ##        cor 
+    ## -0.5766386
 
 ``` r
 # annotate the plot with r coefficient and p-value 
-p + annotate("text", x = 9, y = 300000, label = "r = -0.4") + annotate("text", x = 9, y = 290000, label = "p = 0.08") + theme(plot.title =element_text(size = 12, face = 'bold'))
+p + annotate("text", x = 9, y = 300000, label = "r = -0.6") + annotate("text", x = 9, y = 290000, label = "p = 0.02") + theme(plot.title =element_text(size = 12, face = 'bold'))
 ```
 
     ## Warning: Removed 1 rows containing missing values (geom_point).
@@ -696,6 +695,7 @@ mtext("Diagnostic plots for linear regression analysis", outer = TRUE)
 Outcome Analysis
 ----------------
 
--   The plot and Spearman Correlation test shows that a weak negative inverse correlation (*r* = -0.4) exists between the measured variales. A *p* value of 0.08 (which is quite high) inidicates that the null hypothesis may be accepted in this case.
--   There is no linear relationship between the variables, as the diagnostic tests show no homoskedasticity or Gaussian distribution of the residuals. Both these parameters are required assumptions for a linear regression. In addition to theses, a linear trend is not apparent from the plot.
--   Test statistic (F) = 6.97, degree of freedom =14
+-   The plot and Pearson Correlation test shows that a fairly strong negative inverse correlation (*r* = -0.6) exists between the measured variales. A *p* value of 0.02 (significance taken at p &lt; 0.05) inidicates that the null hypothesis may be rejected in this case.
+-   There is no linear relationship between the variables, as the diagnostic tests show no homoskedasticity or Gaussian distribution of the residuals. Both these parameters are required assumptions for a linear regression. In addition to theses, a linear trend is not apparent from the plot. In light of this contravention of linear regression assumptions, a sigificant p value (0.02) was obtained for regression test performed. This suggests that the interest rate is linearly related with house prices.
+-   Test statistic (t) = -2.6, degree of freedom =14
+-   CONCLUSION:The variables are associated, but a suggested linear relationship is overshadowed by the data contravening some of the assumptions for a regression.
